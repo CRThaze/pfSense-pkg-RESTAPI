@@ -35,6 +35,7 @@ class FirewallRule extends Model {
     public StringField $descr;
     public BooleanField $disabled;
     public BooleanField $log;
+    public StringField $dscp;
     public StringField $tag;
     public StringField $statetype;
     public BooleanField $tcp_flags_any;
@@ -192,8 +193,9 @@ class FirewallRule extends Model {
             help_text: 'Enable or disable logging of traffic that matches this rule.',
         );
         $this->dscp = new StringField(
-            default: '',
+            default: null,
             choices: [
+                '',
                 'af11',
                 'af12',
                 'af13',
@@ -220,6 +222,7 @@ class FirewallRule extends Model {
                 '0x04',
             ],
             allow_empty: true,
+            allow_null: true,
             verbose_name: 'DSCP',
             help_text: 'The DSCP value this firewall rule should match.',
         );
