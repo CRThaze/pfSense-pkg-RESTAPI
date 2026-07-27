@@ -50,7 +50,7 @@ class RESTAPISettingsSync extends Model {
      */
     public function validate_sync_data(string $sync_data): string {
         # Attempt to unserialize the sync data
-        $unserialized_sync_data = unserialize($this->sync_data->value);
+        $unserialized_sync_data = json_decode($this->sync_data->value, associative: true);
 
         # Throw a validation error if $sync_data could not be unserialized
         if (!$unserialized_sync_data) {
@@ -60,6 +60,11 @@ class RESTAPISettingsSync extends Model {
             );
         }
 
+        # Re-validate the incoming data
+        $settings = new RESTAPISettings();
+        $settings->from_internal_object($unserialized_sync_data);
+        $settings->validate();
+
         return $sync_data;
     }
 
@@ -68,7 +73,7 @@ class RESTAPISettingsSync extends Model {
      */
     public function _create(): void {
         # Unserialize the sync data
-        $unserialized_sync_data = unserialize($this->sync_data->value);
+        $unserialized_sync_data = json_decode($this->sync_data->value, associative: true);
 
         # Disable HA sync on this system since it is being managed by a remote peer.
         $unserialized_sync_data['ha_sync'] = 'disabled';
@@ -111,7 +116,7 @@ class RESTAPISettingsSync extends Model {
             $response = \RESTAPI\Core\Tools\http_request(
                 url: "$wc_protocol://$ha_sync_host:$wc_port$endpoint_url",
                 method: 'POST',
-                data: ['sync_data' => serialize($settings->get_pkg_config())],
+                data: ['sync_data' => json_encode($settings->get_pkg_config())],
                 username: $settings->ha_sync_username->value,
                 password: $settings->ha_sync_password->value,
                 validate_certs: false,
