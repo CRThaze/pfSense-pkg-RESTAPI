@@ -94,7 +94,6 @@ class RESTAPISettingsSync extends Model {
         $unserialized_sync_data = json_decode($this->sync_data->value, associative: true);
 
         # Disable HA sync on this system since it is being managed by a remote peer.
-        $unserialized_sync_data['ha_sync'] = 'disabled';
         $unserialized_sync_data['ha_sync_hosts'] = '';
         $unserialized_sync_data['ha_sync_username'] = '';
         $unserialized_sync_data['ha_sync_password'] = '';
