@@ -971,7 +971,6 @@ class APICoreEndpointTestCase extends TestCase {
         $_SERVER['QUERY_STRING'] = "name=$unique_name&type=host&dry_run=true";
         $endpoint = new FirewallAliasEndpoint();
         $json_resp = json_decode($endpoint->process_request());
-        var_dump($json_resp);
         $this->assert_equals($json_resp->code, 200);
 
         # Ensure no new alias was actually persisted
