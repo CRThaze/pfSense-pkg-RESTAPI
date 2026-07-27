@@ -7,6 +7,7 @@ require_once 'RESTAPI/autoloader.inc';
 use RESTAPI\Core\Model;
 use RESTAPI\Endpoints\SystemRESTAPISettingsSyncEndpoint;
 use RESTAPI\Fields\StringField;
+use RESTAPI\Responses\NotAcceptableError;
 use RESTAPI\Responses\ValidationError;
 use function RESTAPI\Core\Tools\cprint;
 
@@ -40,6 +41,23 @@ class RESTAPISettingsSync extends Model {
      */
     protected function void(): array {
         return [];
+    }
+
+    /**
+     * Adds extra validation to the entire RESTAPISettingsSync model
+     * @throws NotAcceptableError When the REST API settings sync feature is not enabled on this host
+     */
+    public function validate_extra(): void
+    {
+        $settings = new RESTAPISettings();
+
+        # Do not accept requests if HA sync features are disabled
+        if (!$settings->ha_sync->value) {
+            throw new NotAcceptableError(
+                message: 'REST API settings sync is not enabled on this host.',
+                response_id: 'RESTAPI_SETTINGS_SYNC_NOT_ENABLED',
+            );
+        }
     }
 
     /**
