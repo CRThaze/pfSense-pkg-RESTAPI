@@ -47,8 +47,7 @@ class RESTAPISettingsSync extends Model {
      * Adds extra validation to the entire RESTAPISettingsSync model
      * @throws NotAcceptableError When the REST API settings sync feature is not enabled on this host
      */
-    public function validate_extra(): void
-    {
+    public function validate_extra(): void {
         $settings = new RESTAPISettings();
 
         # Do not accept requests if HA sync features are disabled

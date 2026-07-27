@@ -91,9 +91,7 @@ class APIEndpointsSystemRESTAPISettingsSyncEndpointTestCase extends TestCase {
      */
     public function test_post_rejected_without_page_all_privilege(): void {
         # Create a user with no privileges
-        $user = new User(
-            data: ['name' => 'sync_test_nopageall', 'password' => 'testpassword', 'priv' => []],
-        );
+        $user = new User(data: ['name' => 'sync_test_nopageall', 'password' => 'testpassword', 'priv' => []]);
         $user->create();
 
         $json_resp = \RESTAPI\Core\Tools\http_request(
@@ -116,9 +114,7 @@ class APIEndpointsSystemRESTAPISettingsSyncEndpointTestCase extends TestCase {
      */
     public function test_post_accepted_with_page_all_privilege(): void {
         # Create a user with the page-all privilege
-        $user = new User(
-            data: ['name' => 'sync_test_pageall', 'password' => 'testpassword', 'priv' => ['page-all']],
-        );
+        $user = new User(data: ['name' => 'sync_test_pageall', 'password' => 'testpassword', 'priv' => ['page-all']]);
         $user->create();
 
         $json_resp = \RESTAPI\Core\Tools\http_request(
@@ -136,4 +132,3 @@ class APIEndpointsSystemRESTAPISettingsSyncEndpointTestCase extends TestCase {
         $user->delete();
     }
 }
-
