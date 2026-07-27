@@ -134,6 +134,51 @@ class APICoreEndpointTestCase extends TestCase {
     }
 
     /**
+     * Checks that when $requires_page_all_privilege is false (the default), each method's privilege set contains both
+     * the page-all privilege and an auto-generated method-scoped privilege.
+     */
+    public function test_privileges_auto_generated_when_requires_page_all_privilege_is_false(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $endpoint = new FirewallAliasEndpoint();
+
+        # Confirm the flag is off by default
+        $this->assert_is_false($endpoint->requires_page_all_privilege);
+
+        # Each privilege array must contain page-all AND the scoped method privilege
+        $this->assert_equals($endpoint->get_privileges, ['page-all', 'api-v2-firewall-alias-get']);
+        $this->assert_equals($endpoint->post_privileges, ['page-all', 'api-v2-firewall-alias-post']);
+        $this->assert_equals($endpoint->patch_privileges, ['page-all', 'api-v2-firewall-alias-patch']);
+        $this->assert_equals($endpoint->put_privileges, ['page-all', 'api-v2-firewall-alias-put']);
+        $this->assert_equals($endpoint->delete_privileges, ['page-all', 'api-v2-firewall-alias-delete']);
+
+        # generate_pfsense_privs() must return a non-empty array of method-scoped privileges
+        $this->assert_is_not_empty($endpoint->generate_pfsense_privs());
+    }
+
+    /**
+     * Checks that when $requires_page_all_privilege is true, every method's privilege set contains only page-all
+     * and that generate_pfsense_privs() returns an empty array (no auto-generated scoped privileges).
+     */
+    public function test_privileges_only_page_all_when_requires_page_all_privilege_is_true(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $endpoint = new FirewallAliasEndpoint();
+        $endpoint->requires_page_all_privilege = true;
+
+        # Re-run privilege assignment to apply the flag
+        $endpoint->__construct();
+
+        # Each privilege array must contain ONLY page-all
+        $this->assert_equals($endpoint->get_privileges, ['page-all']);
+        $this->assert_equals($endpoint->post_privileges, ['page-all']);
+        $this->assert_equals($endpoint->patch_privileges, ['page-all']);
+        $this->assert_equals($endpoint->put_privileges, ['page-all']);
+        $this->assert_equals($endpoint->delete_privileges, ['page-all']);
+
+        # generate_pfsense_privs() must return an empty array — no scoped privileges are registered
+        $this->assert_is_empty($endpoint->generate_pfsense_privs());
+    }
+
+    /**
      * Checks that the check_auth() method correct enforces authentication
      */
     public function test_check_auth(): void {
