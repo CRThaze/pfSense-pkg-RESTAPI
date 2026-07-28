@@ -59,13 +59,12 @@ class HASync extends Model {
             indicates_false: null,
             help_text: 'Enable pfsync state synchronization.',
         );
-
         $this->pfsyncinterface = new InterfaceField(
-            default: '',
+            default: 'lo0',
+            allow_localhost_interface: true,
             allow_empty: true,
             help_text: 'The interface used by pfsync state synchronization.',
         );
-
         $this->pfhostid = new StringField(
             default: '',
             allow_empty: true,
