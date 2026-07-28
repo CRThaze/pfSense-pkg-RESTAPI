@@ -240,6 +240,13 @@ class Endpoint {
     public array $delete_privileges = [];
 
     /**
+     * @var bool $requires_page_all_privilege
+     * When enabled, this endpoint will always require the page-all privilege and will
+     * disable auto-generated/scoped REST API privileges for this endpoint.
+     */
+    public bool $requires_page_all_privilege = false;
+
+    /**
      * @var string $get_help_text
      * Sets the GET request's OpenAPI documentation for this Endpoint. This will be
      * used when generating the OpenAPI documentation for this Endpoint. This is
@@ -534,6 +541,17 @@ class Endpoint {
      */
     private function get_default_privs(): void {
         $page_all_priv = 'page-all';
+
+        # If this endpoint requires page-all, then only assign page-all to the privileges for each method
+        if ($this->requires_page_all_privilege) {
+            $this->get_privileges = [$page_all_priv];
+            $this->post_privileges = [$page_all_priv];
+            $this->patch_privileges = [$page_all_priv];
+            $this->put_privileges = [$page_all_priv];
+            $this->delete_privileges = [$page_all_priv];
+            return;
+        }
+
         $this->get_privileges = [$page_all_priv, $this->get_method_priv_name('GET')];
         $this->post_privileges = [$page_all_priv, $this->get_method_priv_name('POST')];
         $this->patch_privileges = [$page_all_priv, $this->get_method_priv_name('PATCH')];
@@ -564,6 +582,11 @@ class Endpoint {
      * @returns array The pfSense priv list entry array corresponding to the privileges of this Endpoint.
      */
     public function generate_pfsense_privs(): array {
+        # If this endpoint requires page-all, do not generate privileges
+        if ($this->requires_page_all_privilege) {
+            return [];
+        }
+
         # Set an array to populate pfSense priv entries for this Endpoint
         $privs = [];
 
