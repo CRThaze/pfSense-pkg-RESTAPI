@@ -15,11 +15,9 @@ class SystemHASyncEndpoint extends Endpoint {
         $this->url = '/api/v2/system/hasync';
         $this->model_name = 'HASync';
         $this->request_method_options = ['GET', 'PATCH'];
-        $this->tag = 'System';
 
         $this->get_help_text = 'Reads pfSense High Availability synchronization settings.';
-        $this->patch_help_text =
-            'Updates pfSense High Availability synchronization settings and applies the configuration.';
+        $this->patch_help_text = 'Updates pfSense High Availability synchronization settings.';
 
         parent::__construct();
     }
