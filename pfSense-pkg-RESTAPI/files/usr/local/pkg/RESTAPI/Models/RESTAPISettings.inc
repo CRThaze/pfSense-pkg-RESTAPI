@@ -227,7 +227,7 @@ class RESTAPISettings extends Model {
             allow_empty: true,
             verbose_name: 'HA username',
             help_text: "Sets the username to use when authenticating for HA sync processes. This user must be the present
-            on all hosts defined in `ha_sync_hosts`.",
+            on all hosts defined in `ha_sync_hosts` and must hold the `page-all` privilege",
         );
         $this->ha_sync_password = new StringField(
             default: '',

@@ -42,8 +42,8 @@ class SystemDNS extends Model {
             allow_empty: true,
             many: true,
             delimiter: null,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true)],
             verbose_name: 'DNS Servers',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true)],
             help_text: 'The remote DNS server IPv4 or IPv6 addresses.',
         );
 

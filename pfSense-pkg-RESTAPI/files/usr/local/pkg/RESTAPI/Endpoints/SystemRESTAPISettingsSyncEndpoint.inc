@@ -22,6 +22,7 @@ class SystemRESTAPISettingsSyncEndpoint extends Endpoint {
         $this->ignore_interfaces = true;
         $this->ignore_read_only = true;
         $this->auth_methods = ['BasicAuth'];
+        $this->requires_page_all_privilege = true;
 
         # Construct the parent Endpoint object
         parent::__construct();
