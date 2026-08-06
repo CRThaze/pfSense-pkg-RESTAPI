@@ -36,4 +36,12 @@ class JWTAuth extends Auth {
 
         return false;
     }
+
+    /**
+     * Checks if the client is requesting JWT authentication by detecting an Authorization: Bearer
+     * header. Credential validation is intentionally deferred to _authenticate().
+     */
+    public function is_requested(): bool {
+        return !empty($this->get_auth_key(identifier: 'bearer'));
+    }
 }

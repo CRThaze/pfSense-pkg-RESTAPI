@@ -21,6 +21,16 @@ class KeyAuth extends Auth {
      */
     public array $security_scheme = ['type' => 'apiKey', 'in' => 'header', 'name' => 'x-api-key'];
 
+
+
+    /**
+     * Checks if the client is requesting key authentication by detecting the x-api-key header.
+     * Credential validation is intentionally deferred to _authenticate().
+     */
+    public function is_requested(): bool {
+        return !empty($_SERVER['HTTP_X_API_KEY'] ?? '');
+    }
+
     /**
      * Performs REST API key authentication and obtains the username of the user who owns the provided key.
      * @return bool Returns true if match for this client's key found a match stored in config, returns false
