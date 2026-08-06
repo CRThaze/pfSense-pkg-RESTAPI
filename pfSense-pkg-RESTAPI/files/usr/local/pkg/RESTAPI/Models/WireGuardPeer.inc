@@ -88,7 +88,6 @@ class WireGuardPeer extends Model {
             default: '',
             allow_empty: true,
             allow_null: true,
-            write_only: true,
             sensitive: true,
             verbose_name: 'Pre-Shared Key',
             help_text: 'The pre-shared key for this tunnel.',
