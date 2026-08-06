@@ -130,7 +130,6 @@ class TestCase {
         }
     }
 
-
     /**
      * Sets up the test case before tests are run. This can be overridden by your TestCase to setup shared resources
      * required for your tests.
