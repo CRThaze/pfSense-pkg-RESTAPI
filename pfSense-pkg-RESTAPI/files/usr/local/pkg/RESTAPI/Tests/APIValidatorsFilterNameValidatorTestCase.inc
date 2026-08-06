@@ -12,10 +12,12 @@ class APIValidatorsFilterNameValidatorTestCase extends TestCase {
      * Checks that a valid filter name consisting only of A-Z, a-z, 0-9, and _ passes validation.
      */
     public function test_valid_name_passes(): void {
-        $this->assert_does_not_throw(callable: function () {
-            $v = new FilterNameValidator();
-            $v->validate('valid_Name123');
-        });
+        $this->assert_does_not_throw(
+            callable: function () {
+                $v = new FilterNameValidator();
+                $v->validate('valid_Name123');
+            },
+        );
     }
 
     /**

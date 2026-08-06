@@ -220,7 +220,7 @@ class SystemStatus extends Model {
         $kenv = new Command(
             command: "/bin/kenv -q smbios.bios.$bios_field",
             trim_whitespace: true,
-            redirect: "2>/dev/null"
+            redirect: '2>/dev/null',
         );
         return $kenv->result_code === 0 ? $kenv->output : '';
     }

@@ -217,12 +217,7 @@ class APICoreCommandTestCase extends TestCase {
      */
     public function test_pipe_basic(): void {
         # echo three lines; grep filters to only lines containing 'keep'
-        $cmd = new Command(
-            command: 'printf "keep\nskip\nkeep2"',
-            escape: false,
-            pipe: 'grep keep',
-            escape_pipe: false,
-        );
+        $cmd = new Command(command: 'printf "keep\nskip\nkeep2"', escape: false, pipe: 'grep keep', escape_pipe: false);
         $this->assert_str_contains($cmd->output, 'keep');
         $this->assert_str_does_not_contain($cmd->output, 'skip');
     }
@@ -231,11 +226,7 @@ class APICoreCommandTestCase extends TestCase {
      * Checks that the pipe command receives the correct output when the primary command is auto-escaped.
      */
     public function test_pipe_with_escaped_primary_command(): void {
-        $cmd = new Command(
-            command: 'echo hello',
-            pipe: 'grep hello',
-            escape_pipe: false,
-        );
+        $cmd = new Command(command: 'echo hello', pipe: 'grep hello', escape_pipe: false);
         $this->assert_str_contains($cmd->output, 'hello');
         $this->assert_equals($cmd->result_code, 0);
     }
@@ -248,11 +239,7 @@ class APICoreCommandTestCase extends TestCase {
         $sentinel = '/tmp/restapi_pipe_injection_test_' . getmypid();
 
         # Attempt injection through the pipe string — if escape_pipe works, touch must not run
-        $cmd = new Command(
-            command: 'echo hello',
-            pipe: "grep hello; touch $sentinel",
-            escape_pipe: true,
-        );
+        $cmd = new Command(command: 'echo hello', pipe: "grep hello; touch $sentinel", escape_pipe: true);
 
         $this->assert_is_false(file_exists($sentinel));
     }

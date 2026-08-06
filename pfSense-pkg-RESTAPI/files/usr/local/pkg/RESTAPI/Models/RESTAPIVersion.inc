@@ -119,10 +119,7 @@ class RESTAPIVersion extends Model {
      */
     public static function get_api_version(): string {
         # Pull the raw pkg info for the API package into an array for each line
-        $pkg_info = explode(
-            PHP_EOL,
-            (new Command('pkg-static info pfSense-pkg-RESTAPI'))->output
-        );
+        $pkg_info = explode(PHP_EOL, (new Command('pkg-static info pfSense-pkg-RESTAPI'))->output);
 
         # Loop through each line and check the version
         foreach ($pkg_info as $pkg_line) {

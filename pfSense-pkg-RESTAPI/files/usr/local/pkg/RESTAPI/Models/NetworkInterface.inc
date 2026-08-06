@@ -895,11 +895,7 @@ class NetworkInterface extends Model {
         $if = $this->if->value;
 
         # Run ifconfig to determine what media and media options are supported
-        $ifconfig_cmd = new Command(
-            command: "/sbin/ifconfig -m $if",
-            pipe: 'grep "media "',
-            escape_pipe: false,
-        );
+        $ifconfig_cmd = new Command(command: "/sbin/ifconfig -m $if", pipe: 'grep "media "', escape_pipe: false);
         $media_options_output = explode(PHP_EOL, $ifconfig_cmd->output);
 
         # Loop through each supported media from the ifconfig output
