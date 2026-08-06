@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\Model;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Models\DHCPServer;
@@ -678,7 +679,12 @@ class APIModelsNetworkInterfaceTestCase extends TestCase {
         $test_model->if->value = $this->env['PFREST_WAN_IF'];
 
         # Run ifconfig to gather interface details
-        exec("/sbin/ifconfig -m {$test_model->if->value} | grep \"media \"", $ifconfig_output);
+        $ifconfig_cmd = new Command(
+            command: "/sbin/ifconfig -m {$test_model->if->value}",
+            pipe: 'grep "media "',
+            escape_pipe: false,
+        );
+        $ifconfig_output = explode(PHP_EOL, $ifconfig_cmd->output);
 
         # Loop through each line in the ifconfig output and ensure it is found in the `get_supported_media()` output
         foreach ($ifconfig_output as $media_line) {
@@ -803,8 +809,7 @@ class APIModelsNetworkInterfaceTestCase extends TestCase {
         $static_if->create(apply: true);
 
         # Run ifconfig to check the configured interface's values
-        exec("ifconfig {$this->env['PFREST_OPT1_IF']}", $ifconfig_output);
-        $ifconfig_output = implode(PHP_EOL, $ifconfig_output);
+        $ifconfig_output = (new Command("ifconfig {$this->env['PFREST_OPT1_IF']}"))->output;
 
         # Ensure the interface's mtu is shown by ifconfig
         $this->assert_str_contains($ifconfig_output, 'mtu 1501');
@@ -832,8 +837,7 @@ class APIModelsNetworkInterfaceTestCase extends TestCase {
         $static_if->update(apply: true);
 
         # Run ifconfig to check the configured interface's new values
-        exec("ifconfig {$this->env['PFREST_OPT1_IF']}", $ifconfig_output);
-        $ifconfig_output = implode(PHP_EOL, $ifconfig_output);
+        $ifconfig_output = (new Command("ifconfig {$this->env['PFREST_OPT1_IF']}"))->output;
 
         # Ensure the interface's new mtu is shown by ifconfig
         $this->assert_str_contains($ifconfig_output, 'mtu 1500');
@@ -850,8 +854,7 @@ class APIModelsNetworkInterfaceTestCase extends TestCase {
         $static_if->delete();
 
         # Run ifconfig to check the configured interface's deleted values
-        exec("ifconfig {$this->env['PFREST_OPT1_IF']}", $ifconfig_output);
-        $ifconfig_output = implode(PHP_EOL, $ifconfig_output);
+        $ifconfig_output = (new Command("ifconfig {$this->env['PFREST_OPT1_IF']}"))->output;
 
         # Ensure the new static IPv4 address is not shown by ifconfig
         $this->assert_str_does_not_contain(

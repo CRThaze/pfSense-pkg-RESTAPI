@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Core\TestCaseRetry;
 use RESTAPI\Models\FirewallAlias;
@@ -25,7 +26,7 @@ class APIModelsFirewallAliasTestCase extends TestCase {
         # Wait up to 30 seconds for the filter to reload and the table to be create
         foreach (range(0, 30) as $attempt) {
             # Check pfctl for the table
-            $pfctl_output = shell_exec('pfctl -t TEST_GOOGLE_DNS -Ts');
+            $pfctl_output = (new Command('pfctl -t TEST_GOOGLE_DNS -Ts'))->output;
             if ($pfctl_output) {
                 break;
             }

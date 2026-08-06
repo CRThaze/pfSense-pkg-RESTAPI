@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Models\InterfaceVLAN;
 
@@ -21,9 +22,9 @@ class APIModelsInterfaceVLANTestCase extends TestCase {
         $test_vlan->create();
 
         # Ensure the newly created VLAN is correctly configuring by checking ifconfig
-        $ifconfig_output = shell_exec("ifconfig {$this->env['PFREST_LAN_IF']}.2");
-        $this->assert_str_contains($ifconfig_output, 'vlan: 2');
-        $this->assert_str_contains($ifconfig_output, 'vlanpcp: 4');
+        $ifconfig_cmd = new Command("ifconfig {$this->env['PFREST_LAN_IF']}.2");
+        $this->assert_str_contains($ifconfig_cmd->output, 'vlan: 2');
+        $this->assert_str_contains($ifconfig_cmd->output, 'vlanpcp: 4');
 
         # Update the VLAN interface to change the tag and pcp values
         $test_vlan->tag->value = 55;
@@ -31,20 +32,20 @@ class APIModelsInterfaceVLANTestCase extends TestCase {
         $test_vlan->update();
 
         # Ensure the old VLAN is no longer present
-        $ifconfig_output = shell_exec("ifconfig {$this->env['PFREST_LAN_IF']}.2");
-        $this->assert_equals($ifconfig_output, null);
+        $ifconfig_cmd = new Command("ifconfig {$this->env['PFREST_LAN_IF']}.2");
+        $this->assert_not_equals($ifconfig_cmd->result_code, 0);
 
         # Ensure the new VLAN is present
-        $ifconfig_output = shell_exec("ifconfig {$this->env['PFREST_LAN_IF']}.55");
-        $this->assert_str_contains($ifconfig_output, 'vlan: 55');
-        $this->assert_str_contains($ifconfig_output, 'vlanpcp: 7');
+        $ifconfig_cmd = new Command("ifconfig {$this->env['PFREST_LAN_IF']}.55");
+        $this->assert_str_contains($ifconfig_cmd->output, 'vlan: 55');
+        $this->assert_str_contains($ifconfig_cmd->output, 'vlanpcp: 7');
 
         # Delete the VLAN interface
         $test_vlan->delete();
 
         # Ensure the VLAN is no longer present
-        $ifconfig_output = shell_exec("ifconfig {$this->env['PFREST_LAN_IF']}.55");
-        $this->assert_equals($ifconfig_output, null);
+        $ifconfig_cmd = new Command("ifconfig {$this->env['PFREST_LAN_IF']}.55");
+        $this->assert_not_equals($ifconfig_cmd->result_code, 0);
     }
 
     /**
