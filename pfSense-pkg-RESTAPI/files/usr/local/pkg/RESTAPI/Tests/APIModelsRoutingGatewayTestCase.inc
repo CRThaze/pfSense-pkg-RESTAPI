@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Models\NetworkInterface;
 use RESTAPI\Models\RoutingGateway;
@@ -400,19 +401,19 @@ class APIModelsRoutingGatewayTestCase extends TestCase {
         $test_gw->create(apply: true);
 
         # Ensure it is now found in the routing table
-        $netstat_output = $this->run_command('netstat -rn')['output'];
+        $netstat_output = (new Command('netstat -rn'))->output;
         $this->assert_str_contains($netstat_output, '1.2.3.4');
 
         # Update the RoutingGateway's IP and ensure it is now present in the routing table and 1.2.3.4 is not
         $test_gw->gateway->value = '4.3.2.1';
         $test_gw->update(apply: true);
-        $netstat_output = $this->run_command('netstat -rn')['output'];
+        $netstat_output = (new Command('netstat -rn'))->output;
         $this->assert_str_does_not_contain($netstat_output, '1.2.3.4');
         $this->assert_str_contains($netstat_output, '4.3.2.1');
 
         # Delete the RoutingGateway and ensure 4.3.2.1 is no longer in the routing table
         $test_gw->delete(apply: true);
-        $netstat_output = $this->run_command('netstat -rn')['output'];
+        $netstat_output = (new Command('netstat -rn'))->output;
         $this->assert_str_does_not_contain($netstat_output, '4.3.2.1');
     }
 }
