@@ -34,15 +34,15 @@ class APIModelsSystemStatusTestCase extends TestCase {
         $this->assert_is_less_than_or_equal($system_status->disk_usage->value, 100);
         $this->assert_equals(
             $system_status->bios_vendor->value,
-            (new Command(command: '/bin/kenv -q smbios.bios.vendor 2>/dev/null', trim_whitespace: true))->output,
+            (new Command(command: '/bin/kenv -q smbios.bios.vendor', trim_whitespace: true, redirect: '2>/dev/null'))->output,
         );
         $this->assert_equals(
             $system_status->bios_version->value,
-            (new Command(command: '/bin/kenv -q smbios.bios.version 2>/dev/null', trim_whitespace: true))->output,
+            (new Command(command: '/bin/kenv -q smbios.bios.version', trim_whitespace: true, redirect: '2>/dev/null'))->output,
         );
         $this->assert_equals(
             $system_status->bios_date->value,
-            (new Command(command: '/bin/kenv -q smbios.bios.reldate 2>/dev/null', trim_whitespace: true))->output,
+            (new Command(command: '/bin/kenv -q smbios.bios.reldate', trim_whitespace: true, redirect: '2>/dev/null'))->output,
         );
     }
 
