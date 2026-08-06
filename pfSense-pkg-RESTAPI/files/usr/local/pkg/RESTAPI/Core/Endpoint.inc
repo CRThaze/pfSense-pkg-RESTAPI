@@ -1299,7 +1299,7 @@ class Endpoint {
         }
 
         # Otherwise, delete a single object
-        $this->model ->from_representation(id: $this->request_data["id"], parent_id: $this->request_data["parent_id"]);
+        $this->model->from_representation(id: $this->request_data['id'], parent_id: $this->request_data['parent_id']);
         return $this->model->delete(apply: $this->request_data['apply'] === true);
     }
 
