@@ -127,45 +127,49 @@ class APICoreCommandTestCase extends TestCase {
     }
 
     /**
-     * Checks that escape_command neutralises a semicolon injection payload so it cannot act as a
-     * shell command separator.
+     * Checks that escape_command neutralizes a semicolon injection payload so it cannot act as a
+     * shell command separator — the semicolon is present but enclosed inside a single-quoted token.
      */
-    public function test_escape_command_neutralises_semicolon_injection(): void {
+    public function test_escape_command_neutralizes_semicolon_injection(): void {
         $escaped = Command::escape_command('/bin/cmd arg; rm -rf /');
-        $this->assert_str_does_not_contain($escaped, ';');
+        # The semicolon must still be present (not stripped), but enclosed in quotes
+        $this->assert_str_contains($escaped, "'arg;'");
     }
 
     /**
-     * Checks that escape_command neutralises $(...) command substitution syntax.
+     * Checks that escape_command neutralizes $(...) command substitution syntax — the $( sequence
+     * is present but enclosed inside a single-quoted token where the shell cannot evaluate it.
      */
-    public function test_escape_command_neutralises_command_substitution(): void {
+    public function test_escape_command_neutralizes_command_substitution(): void {
         $escaped = Command::escape_command('/bin/cmd $(evil)');
-        $this->assert_str_does_not_contain($escaped, '$(');
+        $this->assert_str_contains($escaped, "'$(evil)'");
     }
 
     /**
-     * Checks that escape_command neutralises backtick command substitution syntax.
+     * Checks that escape_command neutralizes backtick command substitution syntax — the backticks
+     * are present but enclosed inside a single-quoted token.
      */
-    public function test_escape_command_neutralises_backtick_substitution(): void {
+    public function test_escape_command_neutralizes_backtick_substitution(): void {
         $escaped = Command::escape_command('/bin/cmd `evil`');
-        $this->assert_str_does_not_contain($escaped, '`');
+        $this->assert_str_contains($escaped, "'`evil`'");
     }
 
     /**
-     * Checks that escape_command neutralises a pipe character so it cannot chain commands.
+     * Checks that escape_command neutralizes a pipe character so it cannot chain commands —
+     * the pipe is present but enclosed inside a single-quoted token.
      */
-    public function test_escape_command_neutralises_pipe(): void {
+    public function test_escape_command_neutralizes_pipe(): void {
         $escaped = Command::escape_command('/bin/cmd arg | cat /etc/passwd');
-        $this->assert_str_does_not_contain($escaped, '|');
+        $this->assert_str_contains($escaped, "'|'");
     }
 
     /**
-     * Checks that escape_command neutralises an ampersand so it cannot background or chain commands.
+     * Checks that escape_command neutralizes an ampersand so it cannot background or chain commands —
+     * the && sequence is present but enclosed inside a single-quoted token.
      */
-    public function test_escape_command_neutralises_ampersand(): void {
+    public function test_escape_command_neutralizes_ampersand(): void {
         $escaped = Command::escape_command('/bin/cmd arg && evil');
-        # The && must not survive as shell syntax
-        $this->assert_str_does_not_contain($escaped, '&&');
+        $this->assert_str_contains($escaped, "'&&'");
     }
 
     /**
