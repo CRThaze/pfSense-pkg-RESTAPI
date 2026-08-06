@@ -26,7 +26,7 @@ class APIModelsFirewallAliasTestCase extends TestCase {
         # Wait up to 30 seconds for the filter to reload and the table to be create
         foreach (range(0, 30) as $attempt) {
             # Check pfctl for the table
-            $pfctl_ret = (new Command('pfctl -t TEST_GOOGLE_DNS -Ts'));
+            $pfctl_ret = new Command('pfctl -t TEST_GOOGLE_DNS -Ts');
             if ($pfctl_ret->output and $pfctl_ret->result_code == 0) {
                 break;
             }
