@@ -4,9 +4,9 @@ namespace RESTAPI\Models;
 
 use RESTAPI\Core\Model;
 use RESTAPI\Fields\Base64Field;
-use RESTAPI\Fields\StringField;
 use RESTAPI\Fields\DateTimeField;
 use RESTAPI\Fields\IntegerField;
+use RESTAPI\Fields\StringField;
 use RESTAPI\Fields\UIDField;
 use RESTAPI\Responses\ForbiddenError;
 use RESTAPI\Responses\ValidationError;
