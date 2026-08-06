@@ -55,14 +55,14 @@ class WireGuardPeer extends Model {
         $this->endpoint = new StringField(
             default: null,
             allow_null: true,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true, allow_fqdn: true)],
             verbose_name: 'Endpoint',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true, allow_fqdn: true)],
             help_text: 'The IP address or hostname of the remote peer. Set to `null` to make this a dynamic endpoint.',
         );
         $this->port = new PortField(
             default: '51820',
-            conditions: ['!endpoint' => null],
             verbose_name: 'Port',
+            conditions: ['!endpoint' => null],
             help_text: 'The port used by the remote peer.',
         );
         $this->descr = new StringField(
@@ -89,6 +89,7 @@ class WireGuardPeer extends Model {
             allow_empty: true,
             allow_null: true,
             write_only: true,
+            sensitive: true,
             verbose_name: 'Pre-Shared Key',
             help_text: 'The pre-shared key for this tunnel.',
         );
