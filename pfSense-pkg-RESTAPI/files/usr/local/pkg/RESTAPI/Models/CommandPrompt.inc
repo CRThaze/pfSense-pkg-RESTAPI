@@ -43,7 +43,7 @@ class CommandPrompt extends Model {
      * Execute the requested command and populate the output and result code.
      */
     public function _create(): void {
-        $cmd = new Command($this->command->value);
+        $cmd = new Command($this->command->value, escape: false);
         $this->output->value = $cmd->output;
         $this->result_code->value = $cmd->result_code;
     }
