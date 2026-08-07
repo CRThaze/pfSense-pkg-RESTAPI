@@ -43,6 +43,6 @@ class APIAuthBasicAuthTestCase extends TestCase {
         $this->assert_is_false($auth->is_requested());
         $_SERVER['PHP_AUTH_USER'] = 'admin';
         $_SERVER['PHP_AUTH_PW'] = 'pfsense';
-        $this->assert_is_false($auth->is_requested());
+        $this->assert_is_true($auth->is_requested());
     }
 }
