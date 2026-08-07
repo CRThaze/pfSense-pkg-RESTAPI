@@ -1769,7 +1769,7 @@ class Model {
      * @throws NotFoundError When the Model requires a pfSense package that is not installed.
      * @throws ServerError When a package requires a PHP include file that could not be found.
      */
-    private function check_packages(): void {
+    protected function check_packages(): void {
         # Check if the user has opted in to using development (-devel) package variants
         $pkg_config = RESTAPI\Models\RESTAPISettings::get_pkg_config();
         $allow_development_packages = ($pkg_config['allow_development_packages'] ?? '') === 'enabled';
