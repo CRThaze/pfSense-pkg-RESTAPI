@@ -85,7 +85,7 @@ class APIModelsDHCPRelayTestCase extends TestCase {
         $dhcp_relay->update();
 
         # Ensure the DHCP relay service is running with the correct arguments
-        $dhcrelay_process = new Command('ps aux | grep dhcrelay');
+        $dhcrelay_process = new Command('ps aux', pipe: 'grep dhcrelay');
         $lan_if = $this->env['PFREST_LAN_IF'];
         $wan_if = $this->env['PFREST_WAN_IF'];
         $this->assert_str_contains(

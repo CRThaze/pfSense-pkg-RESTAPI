@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Models;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\Model;
 use RESTAPI\Dispatchers\InterfaceApplyDispatcher;
 use RESTAPI\Fields\BooleanField;
@@ -894,7 +895,8 @@ class NetworkInterface extends Model {
         $if = $this->if->value;
 
         # Run ifconfig to determine what media and media options are supported
-        exec("/sbin/ifconfig -m $if | grep \"media \"", $media_options_output);
+        $ifconfig_cmd = new Command(command: "/sbin/ifconfig -m $if", pipe: 'grep "media "', escape_pipe: false);
+        $media_options_output = explode(PHP_EOL, $ifconfig_cmd->output);
 
         # Loop through each supported media from the ifconfig output
         foreach ($media_options_output as $media_option) {

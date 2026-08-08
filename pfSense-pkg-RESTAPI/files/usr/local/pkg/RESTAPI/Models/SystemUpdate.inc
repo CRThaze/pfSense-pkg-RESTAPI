@@ -6,7 +6,6 @@ require_once 'RESTAPI/autoloader.inc';
 
 use RESTAPI\Core\Model;
 use RESTAPI\Dispatchers\SystemUpdateDispatcher;
-use RESTAPI\Fields\BooleanField;
 
 /**
  * Defines a Model that performs a pfSense update operation.

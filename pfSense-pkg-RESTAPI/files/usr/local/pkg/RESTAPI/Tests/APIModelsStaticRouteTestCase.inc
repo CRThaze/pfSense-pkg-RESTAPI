@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Models\FirewallAlias;
 use RESTAPI\Models\NetworkInterface;
@@ -312,7 +313,7 @@ class APIModelsStaticRouteTestCase extends TestCase {
 
         # Ensure the route is found in the routing table after applying
         $this->assert_str_contains(
-            $this->run_command('netstat -rn', trim_whitespace: true)['output'],
+            (new Command('netstat -rn', trim_whitespace: true))->output,
             "{$test_route->network->value} {$test_gw->gateway->value}",
         );
 
@@ -322,11 +323,11 @@ class APIModelsStaticRouteTestCase extends TestCase {
 
         # Ensure the new route is found in the routing table and the old one is not after applying
         $this->assert_str_does_not_contain(
-            $this->run_command('netstat -rn', trim_whitespace: true)['output'],
+            (new Command('netstat -rn', trim_whitespace: true))->output,
             "1.2.3.0/24 {$test_gw->gateway->value}",
         );
         $this->assert_str_contains(
-            $this->run_command('netstat -rn', trim_whitespace: true)['output'],
+            (new Command('netstat -rn', trim_whitespace: true))->output,
             "{$test_route->network->value} {$test_gw->gateway->value}",
         );
 
@@ -334,7 +335,7 @@ class APIModelsStaticRouteTestCase extends TestCase {
         $test_route->delete(apply: true);
 
         $this->assert_str_does_not_contain(
-            $this->run_command('netstat -rn', trim_whitespace: true)['output'],
+            (new Command('netstat -rn', trim_whitespace: true))->output,
             "{$test_route->network->value} {$test_gw->gateway->value}",
         );
 

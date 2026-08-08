@@ -195,6 +195,11 @@ class Auth {
      * @return bool `true` if the user is disabled, `false` if it is not.
      */
     public static function is_user_enabled(string $username): bool {
+        # If username is somehow empty, consider them disabled
+        if (empty($username)) {
+            return false;
+        }
+
         return User::query(name: $username, disabled: false)->exists();
     }
 

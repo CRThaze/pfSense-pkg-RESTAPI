@@ -41,17 +41,17 @@ class User extends Model {
             required: true,
             unique: true,
             maximum_length: 32,
+            verbose_name: 'Name',
             validators: [
                 new RegexValidator(pattern: "/^[a-zA-Z0-9\.\-_]+$/", error_msg: 'Value contains invalid characters.'),
             ],
-            verbose_name: 'Name',
             help_text: 'The username of this local user.',
         );
         $this->password = new StringField(
             required: true,
             sensitive: true,
-            internal_name: $this->get_config('system/webgui/pwhash', 'bcrypt') . '-hash',
             verbose_name: 'Password',
+            internal_name: $this->get_config('system/webgui/pwhash', 'bcrypt') . '-hash',
             help_text: 'The password of this local user.',
         );
         $this->uid = new IntegerField(
@@ -115,10 +115,11 @@ class User extends Model {
         $this->ipsecpsk = new StringField(
             default: '',
             allow_empty: true,
+            sensitive: true,
+            verbose_name: 'IPsec Pre-Shared Key',
             validators: [
                 new RegexValidator(pattern: "/^[[:ascii:]]*$/", error_msg: 'Value contains invalid characters.'),
             ],
-            verbose_name: 'IPsec Pre-Shared Key',
             help_text: 'The IPsec pre-shared key to assign this user.',
         );
         parent::__construct($id, $parent_id, $data, ...$options);

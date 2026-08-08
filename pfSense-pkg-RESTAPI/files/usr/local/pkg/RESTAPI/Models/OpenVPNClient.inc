@@ -205,16 +205,17 @@ class OpenVPNClient extends Model {
         $this->auth_pass = new StringField(
             default: null,
             allow_null: true,
-            conditions: ['!auth_user' => null],
+            sensitive: true,
             verbose_name: 'Auth Pass',
+            conditions: ['!auth_user' => null],
             help_text: 'The password used to authenticate with the OpenVPN server.',
         );
         $this->auth_retry_none = new BooleanField(
             default: false,
             indicates_true: 'yes',
             indicates_false: '',
-            internal_name: 'auth-retry-none',
             verbose_name: 'Auth Retry None',
+            internal_name: 'auth-retry-none',
             help_text: 'Disables retrying authentication if an authentication failed error is received from the server',
         );
         $this->tls = new Base64Field(
@@ -227,8 +228,8 @@ class OpenVPNClient extends Model {
         $this->tls_type = new StringField(
             required: true,
             choices: ['auth', 'crypt'],
-            conditions: ['!tls' => null],
             verbose_name: 'TLS Type',
+            conditions: ['!tls' => null],
             help_text: 'The TLS key usage type. In `auth` mode, the TLS key is used only as HMAC authentication for ' .
                 'the control channel, protecting the peers from unauthorized connections. The `crypt` mode encrypts ' .
                 'the control channel communication in addition to providing authentication, providing more privacy ' .
@@ -237,8 +238,8 @@ class OpenVPNClient extends Model {
         $this->tlsauth_keydir = new StringField(
             default: 'default',
             choices: ['default', '0', '1', '2'],
-            conditions: ['!tls' => null],
             verbose_name: 'Tlsauth Keydir',
+            conditions: ['!tls' => null],
             help_text: 'The TLS key direction. This must be set to complementary values on the client and client. ' .
                 'For example, if the client is set to 0, the client must be set to 1. Both may be set to omit the ' .
                 'direction, in which case the TLS Key will be used bidirectionally.',
@@ -288,23 +289,23 @@ class OpenVPNClient extends Model {
         $this->tunnel_network = new StringField(
             default: '',
             allow_empty: true,
-            validators: [new SubnetValidator(allow_ipv4: true, allow_ipv6: false, allow_alias: false)],
             verbose_name: 'Tunnel Network',
+            validators: [new SubnetValidator(allow_ipv4: true, allow_ipv6: false, allow_alias: false)],
             help_text: 'The IPv4 virtual network used for private communications between this client and client hosts.',
         );
         $this->tunnel_networkv6 = new StringField(
             default: '',
             allow_empty: true,
-            validators: [new SubnetValidator(allow_ipv4: false, allow_ipv6: true, allow_alias: false)],
             verbose_name: 'IPv6 Tunnel Network',
+            validators: [new SubnetValidator(allow_ipv4: false, allow_ipv6: true, allow_alias: false)],
             help_text: 'The IPv6 virtual network used for private communications between this client and client hosts.',
         );
         $this->remote_network = new StringField(
             default: [],
             allow_empty: true,
             many: true,
-            validators: [new SubnetValidator(allow_ipv4: true, allow_ipv6: false, allow_alias: true)],
             verbose_name: 'Remote Network',
+            validators: [new SubnetValidator(allow_ipv4: true, allow_ipv6: false, allow_alias: true)],
             help_text: 'IPv4 networks that will be routed through the tunnel, so that a site-to-site VPN can be ' .
                 'established without manually changing the routing tables. Expressed as a list of ' .
                 'one or more CIDR ranges or host/network type aliases. If this is a site-to-site VPN, enter the ' .
@@ -314,8 +315,8 @@ class OpenVPNClient extends Model {
             default: [],
             allow_empty: true,
             many: true,
-            validators: [new SubnetValidator(allow_ipv4: false, allow_ipv6: true, allow_alias: true)],
             verbose_name: 'IPv6 Remote Network',
+            validators: [new SubnetValidator(allow_ipv4: false, allow_ipv6: true, allow_alias: true)],
             help_text: 'IPv6 networks that will be routed through the tunnel, so that a site-to-site VPN can be ' .
                 'established without manually changing the routing tables. Expressed as a list of ' .
                 'one or more CIDR ranges or host/network type aliases. If this is a site-to-site VPN, enter the ' .
@@ -340,8 +341,8 @@ class OpenVPNClient extends Model {
         $this->topology = new StringField(
             default: 'subnet',
             choices: ['subnet', 'net30'],
-            conditions: ['dev_mode' => 'tun'],
             verbose_name: 'Topology',
+            conditions: ['dev_mode' => 'tun'],
             help_text: 'The method used to supply a virtual adapter IP address to clients when using TUN mode on IPv4.',
         );
         $this->passtos = new BooleanField(
@@ -386,34 +387,34 @@ class OpenVPNClient extends Model {
         );
         $this->keepalive_interval = new IntegerField(
             default: 10,
-            conditions: ['ping_method' => 'keepalive'],
             verbose_name: 'Keepalive Interval',
+            conditions: ['ping_method' => 'keepalive'],
             help_text: 'The keepalive interval parameter.',
         );
         $this->keepalive_timeout = new IntegerField(
             default: 60,
-            conditions: ['ping_method' => 'keepalive'],
             verbose_name: 'Keepalive Timeout',
+            conditions: ['ping_method' => 'keepalive'],
             help_text: 'The keepalive timeout parameter.',
         );
         $this->ping_seconds = new IntegerField(
             default: 10,
-            conditions: ['ping_method' => 'ping'],
             verbose_name: 'Ping Seconds',
+            conditions: ['ping_method' => 'ping'],
             help_text: 'The number of seconds to accept no packets before sending a ping to the ' .
                 'remote peer over the TCP/UDP control channel.',
         );
         $this->ping_action = new StringField(
             default: 'ping_restart',
             choices: ['ping_restart', 'ping_exit'],
-            conditions: ['ping_method' => 'ping'],
             verbose_name: 'Ping Action',
+            conditions: ['ping_method' => 'ping'],
             help_text: 'The action to take after a ping to the remote peer times-out.',
         );
         $this->ping_action_seconds = new IntegerField(
             default: 60,
-            conditions: ['ping_method' => 'ping'],
             verbose_name: 'Ping Action Seconds',
+            conditions: ['ping_method' => 'ping'],
             help_text: 'The number of seconds that must elapse before the ping is considered a timeout and the ' .
                 'configured `ping_action` is performed.',
         );

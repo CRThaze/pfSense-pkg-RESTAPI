@@ -131,27 +131,6 @@ class TestCase {
     }
 
     /**
-     * Runs a shell command and returns its output and return code.
-     * @param string $command The command to execute.
-     * @param bool $trim_whitespace Remove excess whitespace from the command output. This is sometimes helpful when
-     * the output of commands that do not have consistent whitespace formatting.
-     * @return array An array where the `output` key contains the commands output and the `result_code` key contains the
-     * resulting result code of the command.
-     */
-    function run_command(string $command, bool $trim_whitespace = false): array {
-        $results = ['output' => null, 'code' => null];
-        exec(command: "$command 2>/dev/null", output: $results['output'], result_code: $results['result_code']);
-        $results['output'] = implode(PHP_EOL, $results['output']);
-
-        # Normalize output's whitespace if requested
-        if ($trim_whitespace) {
-            $results['output'] = preg_replace('/\s+/', ' ', $results['output']);
-        }
-
-        return $results;
-    }
-
-    /**
      * Sets up the test case before tests are run. This can be overridden by your TestCase to setup shared resources
      * required for your tests.
      */

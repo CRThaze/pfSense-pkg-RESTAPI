@@ -28,12 +28,20 @@ class JWTAuth extends Auth {
         $decoded_jwt = RESTAPIJWT::decode($this->get_auth_key(identifier: 'bearer'));
 
         # Check that the JWT from our Authorization header is valid
-        if ($decoded_jwt) {
+        if ($decoded_jwt and !empty($decoded_jwt['data'])) {
             # Set the username of the authenticating client embedded in the decoded JWT data payload.
             $this->username = $decoded_jwt['data'];
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the client is requesting JWT authentication by detecting an Authorization: Bearer
+     * header. Credential validation is intentionally deferred to _authenticate().
+     */
+    public function is_requested(): bool {
+        return !empty($this->get_auth_key(identifier: 'bearer'));
     }
 }

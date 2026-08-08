@@ -158,8 +158,8 @@ class APIModelTraitsLogFileModelTraitsTestCase extends TestCase {
 
         # Create some mock log files that are xz compressed
         file_put_contents('/tmp/test_xz.log', "Line 7\nLine 8\nLine 9\n");
-        new Command('printf "Line 4\nLine 5\nLine 6\n" | xz -c > /tmp/test_xz.log.0.xz');
-        new Command('printf "Line 1\nLine 2\nLine 3\n" | xz -c > /tmp/test_xz.log.1.xz');
+        new Command(command: 'printf "Line 4\nLine 5\nLine 6\n"', redirect: '> /tmp/test_xz.log.0.xz', pipe: 'xz -c');
+        new Command(command: 'printf "Line 1\nLine 2\nLine 3\n"', redirect: '> /tmp/test_xz.log.1.xz', pipe: 'xz -c');
 
         # Read the system log file
         $log = $model->read_log('/tmp/test_xz.log');

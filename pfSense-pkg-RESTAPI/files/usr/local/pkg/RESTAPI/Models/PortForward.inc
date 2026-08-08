@@ -15,7 +15,6 @@ use RESTAPI\Fields\SpecialNetworkField;
 use RESTAPI\Fields\StringField;
 use RESTAPI\Fields\UnixTimeField;
 use RESTAPI\Responses\ServerError;
-use RESTAPI\Validators\IPAddressValidator;
 
 /**
  * Defines a Model that represents port forward rules.

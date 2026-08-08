@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Tests;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Core\TestCaseRetry;
 use RESTAPI\Models\FirewallAlias;
@@ -25,8 +26,8 @@ class APIModelsFirewallAliasTestCase extends TestCase {
         # Wait up to 30 seconds for the filter to reload and the table to be create
         foreach (range(0, 30) as $attempt) {
             # Check pfctl for the table
-            $pfctl_output = shell_exec('pfctl -t TEST_GOOGLE_DNS -Ts');
-            if ($pfctl_output) {
+            $pfctl_ret = new Command('pfctl -t TEST_GOOGLE_DNS -Ts');
+            if ($pfctl_ret->output and $pfctl_ret->result_code == 0) {
                 break;
             }
 
@@ -35,8 +36,8 @@ class APIModelsFirewallAliasTestCase extends TestCase {
         }
 
         # Ensure expected IPs were resolved and stored in a pfctl with the same name as our alias
-        $this->assert_str_contains($pfctl_output, '8.8.8.8');
-        $this->assert_str_contains($pfctl_output, '8.8.4.4');
+        $this->assert_str_contains($pfctl_ret->output, '8.8.8.8');
+        $this->assert_str_contains($pfctl_ret->output, '8.8.4.4');
 
         # Delete the alias
         $test_alias->delete(apply: true);

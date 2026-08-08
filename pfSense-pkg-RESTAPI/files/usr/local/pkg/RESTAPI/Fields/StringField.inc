@@ -123,7 +123,8 @@ class StringField extends Field {
             internal_namespace: $internal_namespace,
             referenced_by: $referenced_by,
             conditions: $conditions,
-            validators: $validators + [
+            validators: [
+                ...$validators,
                 new RESTAPI\Validators\LengthValidator(minimum: $minimum_length, maximum: $maximum_length),
             ],
             help_text: $help_text,

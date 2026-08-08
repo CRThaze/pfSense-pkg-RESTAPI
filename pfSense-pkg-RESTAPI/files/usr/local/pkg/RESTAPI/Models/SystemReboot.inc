@@ -4,7 +4,6 @@ namespace RESTAPI\Models;
 
 use RESTAPI\Core\Model;
 use RESTAPI\Dispatchers\SystemRebootDispatcher;
-use RESTAPI\Fields\BooleanField;
 
 /**
  * Defines a Model that performs a system reboot operation.

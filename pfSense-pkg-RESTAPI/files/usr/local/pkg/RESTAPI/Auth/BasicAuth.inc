@@ -28,8 +28,8 @@ class BasicAuth extends Auth {
      */
     public function _authenticate(): bool {
         # Obtain the username and password from the client via Basic authentication
-        $this->username = $_SERVER['PHP_AUTH_USER'] ?: '';
-        $password = $_SERVER['PHP_AUTH_PW'] ?: '';
+        $this->username = $_SERVER['PHP_AUTH_USER'] ?? '';
+        $password = $_SERVER['PHP_AUTH_PW'] ?? '';
 
         # Authenticate against the local user database and return the result
         return (bool) authenticate_user($this->username, $password);
@@ -39,7 +39,7 @@ class BasicAuth extends Auth {
      * Checks if the remote client is requesting BasicAuth by checking for the necessary headers.
      */
     public function is_requested(): bool {
-        return $_SERVER['PHP_AUTH_USER'] or $_SERVER['PHP_AUTH_PW'];
+        return $_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW'];
     }
 
     /**

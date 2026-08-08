@@ -24,6 +24,15 @@ class FilterNameValidator extends Validator {
     public function validate(mixed $value, string $field_name = ''): void {
         $reserved_names = get_pf_reserved();
 
+        # Throw an exception if the name contains characters outside A-Z, a-z, 0-9, and _
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $value)) {
+            throw new ValidationError(
+                message: "Field '$field_name' cannot be '$value' because it contains invalid characters. " .
+                    'Only A-Z, a-z, 0-9, and _ are allowed.',
+                response_id: 'FILTER_NAME_VALIDATOR_INVALID_CHARACTERS',
+            );
+        }
+
         # Throw an exception if this name is reserved
         if (in_array($value, $reserved_names)) {
             throw new ValidationError(

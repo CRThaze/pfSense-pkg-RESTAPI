@@ -2,6 +2,7 @@
 
 namespace RESTAPI\Dispatchers;
 
+use RESTAPI\Core\Command;
 use RESTAPI\Core\Dispatcher;
 use RESTAPI\Responses\ServerError;
 
@@ -37,14 +38,23 @@ class ACMECertificateIssueDispatcher extends Dispatcher {
             result_log: '',
         );
 
-        # pfSense prints the output of the acme.sh instead of returning it, start output buffering to capture it
-        ob_start();
+        # Record the current byte size of the acme.sh issue log before issuance so we can
+        # extract only the new content appended during this run.
+        $log_file = "/tmp/acme/{$arguments['certificate']}/acme_issuecert.log";
+        $pre_size = file_exists($log_file) ? filesize($log_file) : 0;
 
         # Issue the ACME certificate
         \pfsense_pkg\acme\issue_certificate(id: $arguments['certificate'], force: true, renew: false);
 
-        # Log the results of the ACME certificate issue
-        $result = ob_get_clean();
+        # Extract only the bytes appended to the log since before the issuance started.
+        # tail -c +N outputs from byte N onward (1-indexed), so +($pre_size+1) skips
+        # all pre-existing content and returns only what was written during this run.
+        $start_byte = $pre_size + 1;
+        if (file_exists($log_file) && filesize($log_file) >= $start_byte) {
+            $result = (new Command("/usr/bin/tail -c +$start_byte $log_file"))->output;
+        } else {
+            $result = '';
+        }
 
         # Replace the issuance result file
         $this->set_issuance_result(
@@ -55,7 +65,7 @@ class ACMECertificateIssueDispatcher extends Dispatcher {
         );
 
         # Wait a bit to ensure the issue log is written before proceeding
-        sleep(1);
+        sleep(5);
     }
 
     /**

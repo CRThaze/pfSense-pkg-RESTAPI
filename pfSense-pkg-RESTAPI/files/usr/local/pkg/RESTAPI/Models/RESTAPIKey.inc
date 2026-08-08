@@ -133,7 +133,7 @@ class RESTAPIKey extends Model {
         $hash = hash($this->hash_algo->value, $key);
 
         # Authentication is successful when incoming key matches the hashed key stored in config
-        if ($hash === $this->hash->value) {
+        if (hash_equals($hash, $this->hash->value)) {
             return true;
         }
 

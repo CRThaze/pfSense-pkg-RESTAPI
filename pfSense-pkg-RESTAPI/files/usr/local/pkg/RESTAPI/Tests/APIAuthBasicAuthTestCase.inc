@@ -33,14 +33,14 @@ class APIAuthBasicAuthTestCase extends TestCase {
         $auth = new BasicAuth();
         $this->assert_is_false($auth->is_requested());
 
-        # Ensure is_requested() returns true if either a basic username or password are specified
+        # Ensure is_requested() returns false if either a basic username or password are specified
         $_SERVER['PHP_AUTH_USER'] = 'admin';
         $_SERVER['PHP_AUTH_PW'] = null;
         $auth = new BasicAuth();
-        $this->assert_is_true($auth->is_requested());
+        $this->assert_is_false($auth->is_requested());
         $_SERVER['PHP_AUTH_USER'] = null;
         $_SERVER['PHP_AUTH_PW'] = 'pfsense';
-        $this->assert_is_true($auth->is_requested());
+        $this->assert_is_false($auth->is_requested());
         $_SERVER['PHP_AUTH_USER'] = 'admin';
         $_SERVER['PHP_AUTH_PW'] = 'pfsense';
         $this->assert_is_true($auth->is_requested());

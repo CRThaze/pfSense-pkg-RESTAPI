@@ -3,9 +3,7 @@
 namespace RESTAPI\Models;
 
 use RESTAPI;
-use RESTAPI\Core\Command;
 use RESTAPI\Core\Model;
-use RESTAPI\Fields\BooleanField;
 use RESTAPI\Fields\ForeignModelField;
 use RESTAPI\Fields\ObjectField;
 use RESTAPI\Fields\StringField;

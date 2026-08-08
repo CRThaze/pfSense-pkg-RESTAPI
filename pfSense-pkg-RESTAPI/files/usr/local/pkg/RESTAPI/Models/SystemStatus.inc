@@ -217,7 +217,11 @@ class SystemStatus extends Model {
      */
     private function get_bios_info(string $bios_field): string {
         # Run the kenv command to obtain the requested BIOS information
-        $kenv = new Command(command: "/bin/kenv -q smbios.bios.$bios_field 2>/dev/null", trim_whitespace: true);
+        $kenv = new Command(
+            command: "/bin/kenv -q smbios.bios.$bios_field",
+            trim_whitespace: true,
+            redirect: '2>/dev/null',
+        );
         return $kenv->result_code === 0 ? $kenv->output : '';
     }
 
