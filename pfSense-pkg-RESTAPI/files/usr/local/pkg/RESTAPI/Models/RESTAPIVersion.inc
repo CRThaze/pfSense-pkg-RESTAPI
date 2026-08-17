@@ -127,7 +127,7 @@ class RESTAPIVersion extends Model {
                 # Locate the version and format it to a standard semantic version format (x.x.x)
                 $version = str_replace(' ', '', $pkg_line);
                 $version = explode(':', $version)[1];
-                $version = strlen($version) === 3 ? $version . '.0' : $version;
+                $version = substr_count($version, '.') === 1 ? $version . '.0' : $version;
                 $version = str_replace('_', '.', $version);
                 return "v$version";
             }
