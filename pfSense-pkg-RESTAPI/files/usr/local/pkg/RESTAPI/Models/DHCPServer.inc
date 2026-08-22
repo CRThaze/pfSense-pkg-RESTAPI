@@ -17,6 +17,7 @@ use RESTAPI\Responses\ConflictError;
 use RESTAPI\Responses\ValidationError;
 use RESTAPI\Validators\IPAddressValidator;
 use RESTAPI\Validators\MACAddressValidator;
+use RESTAPI\Validators\URLValidator;
 
 /**
  * Defines a Model that interacts with the DHCP server for a given interface.
@@ -48,6 +49,15 @@ class DHCPServer extends Model {
     public NestedModelField $pool;
     public NestedModelField $numberoptions;
     public NestedModelField $staticmap;
+    public BooleanField $netboot;
+    public StringField $nextserver;
+    public StringField $filename;
+    public StringField $filename32;
+    public StringField $filename64;
+    public StringField $filename32arm;
+    public StringField $filename64arm;
+    public StringField $uefihttpboot;
+    public StringField $rootpath;
 
     public function __construct(mixed $id = null, mixed $parent_id = null, mixed $data = [], mixed ...$options) {
         # Define Model attributes
@@ -78,10 +88,10 @@ class DHCPServer extends Model {
             default: '',
             allow_empty: true,
             maximum_length: 15,
+            verbose_name: 'Range From',
             internal_name: 'from',
             internal_namespace: 'range',
             validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
-            verbose_name: 'Range From',
             help_text: 'The starting IP address for the primary DHCP pool. This address must be less than or equal ' .
                 'to the `range_to` field.',
         );
@@ -89,10 +99,10 @@ class DHCPServer extends Model {
             default: '',
             allow_empty: true,
             maximum_length: 15,
+            verbose_name: 'Range To',
             internal_name: 'to',
             internal_namespace: 'range',
             validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
-            verbose_name: 'Range To',
             help_text: 'The ending IP address for the primary DHCP pool. This address must be greater than or equal ' .
                 'to the `range_to` field.',
         );
@@ -107,8 +117,8 @@ class DHCPServer extends Model {
             default: '',
             allow_empty: true,
             maximum_length: 255,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true, allow_fqdn: true)],
             verbose_name: 'Failover Peer IP',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: true, allow_fqdn: true)],
             help_text: 'The interface IP address of the other firewall (failover peer) in this subnet. Leave ' .
                 'empty to disable failover peering.',
         );
@@ -117,8 +127,8 @@ class DHCPServer extends Model {
             allow_empty: true,
             many: true,
             maximum_length: 17,
-            validators: [new MACAddressValidator()],
             verbose_name: 'MAC Allow',
+            validators: [new MACAddressValidator()],
             help_text: 'MAC addresses this DHCP server is allowed to provide leases for.',
         );
         $this->mac_deny = new StringField(
@@ -126,8 +136,8 @@ class DHCPServer extends Model {
             allow_empty: true,
             many: true,
             maximum_length: 17,
-            validators: [new MACAddressValidator()],
             verbose_name: 'MAC Deny',
+            validators: [new MACAddressValidator()],
             help_text: 'MAC addresses this DHCP server is not allowed to provide leases for.',
         );
         $this->domainsearchlist = new StringField(
@@ -136,8 +146,8 @@ class DHCPServer extends Model {
             many: true,
             maximum_length: 255,
             delimiter: ';',
-            validators: [new IPAddressValidator(allow_ipv4: false, allow_ipv6: false, allow_fqdn: true)],
             verbose_name: 'Domain Search List',
+            validators: [new IPAddressValidator(allow_ipv4: false, allow_ipv6: false, allow_fqdn: true)],
             help_text: 'The domain search list to provide via DHCP.',
         );
         $this->defaultleasetime = new IntegerField(
@@ -159,8 +169,8 @@ class DHCPServer extends Model {
             default: '',
             allow_empty: true,
             maximum_length: 15,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false, allow_keywords: ['none'])],
             verbose_name: 'Gateway',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false, allow_keywords: ['none'])],
             help_text: 'The gateway IPv4 address to provide via DHCP. This is only necessary if you are not using ' .
                 "the interface's IP as the gateway. Specify `none` for no gateway assignment.",
         );
@@ -171,8 +181,8 @@ class DHCPServer extends Model {
             many_maximum: 4,
             maximum_length: 15,
             delimiter: null,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
             verbose_name: 'DNS Servers',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
             help_text: 'The DNS servers to provide via DHCP. Leave empty to default to system nameservers.',
         );
         $this->winsserver = new StringField(
@@ -182,8 +192,8 @@ class DHCPServer extends Model {
             many_maximum: 2,
             maximum_length: 15,
             delimiter: null,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
             verbose_name: 'WINS Servers',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
             help_text: 'The WINS servers to provide via DHCP.',
         );
         $this->ntpserver = new StringField(
@@ -193,8 +203,8 @@ class DHCPServer extends Model {
             many_maximum: 4,
             maximum_length: 256,
             delimiter: null,
-            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false, allow_fqdn: true)],
             verbose_name: 'NTP Servers',
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false, allow_fqdn: true)],
             help_text: 'The NTP servers to provide via DHCP.',
         );
         $this->staticarp = new BooleanField(
@@ -272,6 +282,69 @@ class DHCPServer extends Model {
             allow_empty: true,
             verbose_name: 'Static Mappings',
             help_text: 'Static mappings applied to this DHCP server.',
+        );
+        $this->netboot = new BooleanField(
+            default: false,
+            verbose_name: 'Enable Network Booting',
+            help_text: 'Enable network booting (PXE/TFTP/UEFI HTTP boot) options for this DHCP server.',
+        );
+        $this->nextserver = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'Next Server',
+            conditions: ['netboot' => true],
+            validators: [new IPAddressValidator(allow_ipv4: true, allow_ipv6: false)],
+            help_text: 'The IPv4 address of the network boot server (e.g. TFTP server).',
+        );
+        $this->filename = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'Default Bootfile Name',
+            conditions: ['netboot' => true],
+            help_text: 'The default bootfile name provided to BIOS/legacy PXE clients.',
+        );
+        $this->filename32 = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'UEFI 32-bit Bootfile Name',
+            conditions: ['netboot' => true],
+            help_text: 'The bootfile name provided to 32-bit UEFI PXE clients.',
+        );
+        $this->filename64 = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'UEFI 64-bit Bootfile Name',
+            conditions: ['netboot' => true],
+            help_text: 'The bootfile name provided to 64-bit UEFI PXE clients.',
+        );
+        $this->filename32arm = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'UEFI 32-bit ARM Bootfile Name',
+            conditions: ['netboot' => true],
+            help_text: 'The bootfile name provided to 32-bit ARM UEFI PXE clients.',
+        );
+        $this->filename64arm = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'UEFI 64-bit ARM Bootfile Name',
+            conditions: ['netboot' => true],
+            help_text: 'The bootfile name provided to 64-bit ARM UEFI PXE clients.',
+        );
+        $this->uefihttpboot = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'UEFI HTTPBoot URL',
+            conditions: ['netboot' => true],
+            validators: [new URLValidator()],
+            help_text: 'The URL provided to UEFI HTTP boot clients.',
+        );
+        $this->rootpath = new StringField(
+            default: '',
+            allow_empty: true,
+            verbose_name: 'Root Path',
+            conditions: ['netboot' => true],
+            help_text: 'The root path provided to network boot clients.',
         );
 
         parent::__construct($id, $parent_id, $data, ...$options);
