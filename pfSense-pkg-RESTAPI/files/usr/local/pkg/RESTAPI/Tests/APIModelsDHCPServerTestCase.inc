@@ -537,6 +537,129 @@ class APIModelsDHCPServerTestCase extends TestCase {
     }
 
     /**
+     * Ensures the netboot fields are correctly written to the Kea DHCPv4 configuration after applying.
+     * This test only runs when Kea is the active DHCP backend (kea-dhcp4.conf exists).
+     */
+    public function test_netboot_fields_written_to_kea_config(): void {
+        # Skip this test if Kea is not the active DHCP backend
+        if (!file_exists('/usr/local/etc/kea/kea-dhcp4.conf')) {
+            return;
+        }
+
+        $dhcp_server = new DHCPServer(id: 'lan', async: false);
+        $dhcp_server->netboot->value = true;
+        $dhcp_server->nextserver->value = '1.2.3.4';
+        $dhcp_server->filename->value = 'test.txt';
+        $dhcp_server->filename32->value = '32.txt';
+        $dhcp_server->filename64->value = '64.txt';
+        $dhcp_server->filename32arm->value = 'arm32.txt';
+        $dhcp_server->filename64arm->value = 'arm64.txt';
+        $dhcp_server->uefihttpboot->value = 'https://example.com';
+        $dhcp_server->rootpath->value = 'testroot';
+        $dhcp_server->update(apply: true);
+
+        $kea_conf = (new Command('cat /usr/local/etc/kea/kea-dhcp4.conf'))->output;
+
+        # Ensure next-server is written
+        $this->assert_str_contains($kea_conf, '"next-server": "1.2.3.4"');
+
+        # Ensure root-path option-data is written
+        $this->assert_str_contains($kea_conf, '"root-path"');
+        $this->assert_str_contains($kea_conf, '"data": "testroot"');
+
+        # Ensure UEFI HTTP boot client-class is written with the correct URL
+        $this->assert_str_contains($kea_conf, 'ipxe_uefihttp_');
+        $this->assert_str_contains($kea_conf, '"data": "https://example.com"');
+
+        # Ensure 32-bit UEFI PXE client-class is written
+        $this->assert_str_contains($kea_conf, 'ipxe_32_');
+        $this->assert_str_contains($kea_conf, '"data": "32.txt"');
+
+        # Ensure 64-bit UEFI PXE client-class is written
+        $this->assert_str_contains($kea_conf, 'ipxe_64_');
+        $this->assert_str_contains($kea_conf, '"data": "64.txt"');
+
+        # Ensure 32-bit ARM UEFI PXE client-class is written
+        $this->assert_str_contains($kea_conf, 'ipxe_32arm_');
+        $this->assert_str_contains($kea_conf, '"data": "arm32.txt"');
+
+        # Ensure 64-bit ARM UEFI PXE client-class is written
+        $this->assert_str_contains($kea_conf, 'ipxe_64arm_');
+        $this->assert_str_contains($kea_conf, '"data": "arm64.txt"');
+
+        # Ensure legacy PXE client-class is written with the default filename
+        $this->assert_str_contains($kea_conf, 'ipxe_legacy_');
+        $this->assert_str_contains($kea_conf, '"data": "test.txt"');
+
+        # Disable netboot and ensure the netboot-specific entries are removed
+        $dhcp_server->netboot->value = false;
+        $dhcp_server->update(apply: true);
+
+        $kea_conf_after = (new Command('cat /usr/local/etc/kea/kea-dhcp4.conf'))->output;
+        $this->assert_str_does_not_contain($kea_conf_after, '"next-server"');
+        $this->assert_str_does_not_contain($kea_conf_after, 'ipxe_uefihttp_');
+        $this->assert_str_does_not_contain($kea_conf_after, 'ipxe_legacy_');
+    }
+
+    /**
+     * Ensures that netboot sub-fields are not validated when `netboot` is false.
+     */
+    public function test_netboot_subfields_not_required_without_netboot(): void {
+        $this->assert_does_not_throw(
+            callable: function (): void {
+                $dhcp_server = new DHCPServer(id: 'lan', async: false);
+                $dhcp_server->netboot->value = false;
+                # nextserver requires a valid IPv4 when netboot is true; it should be silently ignored when false
+                $dhcp_server->uefihttpboot->value = '';
+                $dhcp_server->nextserver->value = '';
+                $dhcp_server->update(apply: false);
+            },
+        );
+    }
+
+    /**
+     * Ensures that `nextserver` must be a valid IPv4 address when `netboot` is enabled.
+     */
+    public function test_nextserver_must_be_valid_ipv4(): void {
+        $this->assert_throws_response(
+            response_id: 'IP_ADDRESS_VALIDATOR_FAILED',
+            code: 400,
+            callable: function (): void {
+                $dhcp_server = new DHCPServer(
+                    id: 'lan',
+                    data: [
+                        'netboot' => true,
+                        'nextserver' => 'not-an-ip',
+                    ],
+                    async: false,
+                );
+                $dhcp_server->validate();
+            },
+        );
+    }
+
+    /**
+     * Ensures that `uefihttpboot` must be a valid URL when `netboot` is enabled.
+     */
+    public function test_uefihttpboot_must_be_valid_url(): void {
+        $this->assert_throws_response(
+            response_id: 'URL_VALIDATOR_FAILED',
+            code: 400,
+            callable: function (): void {
+                $dhcp_server = new DHCPServer(
+                    id: 'lan',
+                    data: [
+                        'netboot' => true,
+                        'uefihttpboot' => 'not a url %%',
+                    ],
+                    async: false,
+                );
+                $dhcp_server->validate();
+            },
+        );
+    }
+
+    /**
      * Ensures DHCP servers can be newly created and deleted for new interfaces.
      */
     public function test_dhcp_server_create_and_delete_for_new_interface(): void {
