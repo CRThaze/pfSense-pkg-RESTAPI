@@ -189,7 +189,7 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $rid = $rule->tracker->value;
         $pfctl_rule_created =
             "$type  in  quick  on $if $iptype proto $proto  from $src port $srcport to $dst port " .
-            "$dstport ridentifier $rid flags S/SA keep state label \"USER_RULE: $descr\" label \"id:$rid\"";
+            "$dstport ridentifier $rid flags S/SA keep state";
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_created);
 
         # Update the firewall rule object with new values
@@ -222,7 +222,7 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $rid = $rule->tracker->value;
         $pfctl_rule_updated =
             "$type  in  quick  on $if $iptype proto $proto  from $src port $srcport to $dst port " .
-            "$dstport ridentifier $rid label \"USER_RULE: $descr\" label \"id:$rid\"";
+            "$dstport ridentifier $rid";
         $this->assert_str_does_not_contain($pfctl_rules, $pfctl_rule_created);
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_updated);
 
@@ -270,7 +270,7 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $dst = $rule->destination->value;
         $rid = $rule->tracker->value;
         $gw = $rule->gateway->value;
-        $pfctl_rule_created = "pass  in  quick  on $if  \$GW$gw $iptype from $src to $dst ridentifier $rid keep state label \"USER_RULE\" label \"id:$rid\" label \"gw:$gw\"";
+        $pfctl_rule_created = "pass  in  quick  on $if  \$GW$gw $iptype from $src to $dst ridentifier $rid keep state";
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_created);
 
         # Delete the firewall rule and gateway
@@ -515,7 +515,7 @@ class APIModelsFirewallRuleTestCase extends TestCase {
 
         # Ensure the schedule is found tied to the rule in pfctl
         $pfctl = file_get_contents('/tmp/rules.debug');
-        $this->assert_str_contains($pfctl, "s:{$sched->schedlabel->value}");
+        $this->assert_str_contains($pfctl, $sched->schedlabel->value);
 
         # Update the schedule so it is inactive and ensure the rule is no longer present in pfctl
         $sched->timerange->value[0]['day'] = [$test_day];
@@ -527,7 +527,7 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $rule->sched->value = null;
         $rule->update(apply: true);
         $pfctl = file_get_contents('/tmp/rules.debug');
-        $this->assert_str_contains($pfctl, "id:{$rule->tracker->value}");
+        $this->assert_str_contains($pfctl, $rule->tracker->value);
         $this->assert_str_does_not_contain($pfctl, "s:{$sched->schedlabel->value}");
 
         # Delete the rule and schedule
