@@ -16,6 +16,48 @@ use RESTAPI\Responses\ServerError;
 
 class APIModelsFirewallRuleTestCase extends TestCase {
     /**
+     * Asserts that the given $haystack contains a pfctl rule label fragment in either the pfSense 2.8.x format
+     * (`label "USER_RULE[: $descr]" label "id:$rid"`) or the pfSense 2.9.0+ format
+     * (`label "id=$rid" label "tags=user_rule"[ label "descr=$descr"]`).
+     * @param string $haystack The full rules.debug content to search.
+     * @param string $rid      The rule tracker/ridentifier value.
+     * @param string $descr    The rule description, or empty string when no description.
+     */
+    public function assert_rule_label(string $haystack, string $rid, string $descr = ''): void {
+        # Build both possible label fragments
+        $legacy_label = $descr !== ''
+            ? "label \"USER_RULE: $descr\" label \"id:$rid\""
+            : "label \"USER_RULE\" label \"id:$rid\"";
+        $new_label = $descr !== ''
+            ? "label \"id=$rid\" label \"tags=user_rule\" label \"descr=$descr\""
+            : "label \"id=$rid\" label \"tags=user_rule\"";
+
+        $found = str_contains($haystack, $legacy_label) || str_contains($haystack, $new_label);
+        if (!$found) {
+            throw new \Exception(
+                "[AssertionError] Expected string to contain rule label for rid=$rid descr='$descr'.\n" .
+                "Tried legacy: $legacy_label\n" .
+                "Tried new:    $new_label",
+            );
+        }
+    }
+
+    /**
+     * Asserts that the given $haystack contains a pfctl gateway label fragment in either the pfSense 2.8.x format
+     * (`label "gw:$gw"`) or the pfSense 2.9.0+ format (`label "gw=$gw"`).
+     * @param string $haystack The full rules.debug content to search.
+     * @param string $gw       The gateway name.
+     */
+    public function assert_gw_label(string $haystack, string $gw): void {
+        $found = str_contains($haystack, "label \"gw:$gw\"") || str_contains($haystack, "label \"gw=$gw\"");
+        if (!$found) {
+            throw new \Exception(
+                "[AssertionError] Expected string to contain gateway label for gw=$gw.",
+            );
+        }
+    }
+
+    /**
      * Reads the active ruleset directly from pfctl. If pfctl is not ready, it will retry up to 5 times before
      * throwing an error.
      * @param string|null $needle Optional string to search for in the output before returning
@@ -189,8 +231,9 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $rid = $rule->tracker->value;
         $pfctl_rule_created =
             "$type  in  quick  on $if $iptype proto $proto  from $src port $srcport to $dst port " .
-            "$dstport ridentifier $rid flags S/SA keep state label \"USER_RULE: $descr\" label \"id:$rid\"";
+            "$dstport ridentifier $rid flags S/SA keep state";
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_created);
+        $this->assert_rule_label($pfctl_rules, $rid, $descr);
 
         # Update the firewall rule object with new values
         $rule->from_representation(
@@ -222,9 +265,10 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $rid = $rule->tracker->value;
         $pfctl_rule_updated =
             "$type  in  quick  on $if $iptype proto $proto  from $src port $srcport to $dst port " .
-            "$dstport ridentifier $rid label \"USER_RULE: $descr\" label \"id:$rid\"";
+            "$dstport ridentifier $rid";
         $this->assert_str_does_not_contain($pfctl_rules, $pfctl_rule_created);
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_updated);
+        $this->assert_rule_label($pfctl_rules, $rid, $descr);
 
         # Delete the rule and ensure it is no longer present in pfctl
         $rule->delete(apply: true);
@@ -270,8 +314,10 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $dst = $rule->destination->value;
         $rid = $rule->tracker->value;
         $gw = $rule->gateway->value;
-        $pfctl_rule_created = "pass  in  quick  on $if  \$GW$gw $iptype from $src to $dst ridentifier $rid keep state label \"USER_RULE\" label \"id:$rid\" label \"gw:$gw\"";
+        $pfctl_rule_created = "pass  in  quick  on $if  \$GW$gw $iptype from $src to $dst ridentifier $rid keep state";
         $this->assert_str_contains($pfctl_rules, $pfctl_rule_created);
+        $this->assert_rule_label($pfctl_rules, $rid);
+        $this->assert_gw_label($pfctl_rules, $gw);
 
         # Delete the firewall rule and gateway
         $rule->delete(apply: true);
@@ -523,11 +569,13 @@ class APIModelsFirewallRuleTestCase extends TestCase {
         $pfctl = file_get_contents('/tmp/rules.debug');
         $this->assert_str_does_not_contain($pfctl, "s:{$sched->schedlabel->value}");
 
-        # Update the rule to remove the schedule and ensure it is present again
+        # Update the rule to remove the schedule and ensure it is present again (check for either label format)
         $rule->sched->value = null;
         $rule->update(apply: true);
         $pfctl = file_get_contents('/tmp/rules.debug');
-        $this->assert_str_contains($pfctl, "id:{$rule->tracker->value}");
+        $rid = $rule->tracker->value;
+        $found = str_contains($pfctl, "id:$rid") || str_contains($pfctl, "id=$rid");
+        $this->assert_is_true($found);
         $this->assert_str_does_not_contain($pfctl, "s:{$sched->schedlabel->value}");
 
         # Delete the rule and schedule
