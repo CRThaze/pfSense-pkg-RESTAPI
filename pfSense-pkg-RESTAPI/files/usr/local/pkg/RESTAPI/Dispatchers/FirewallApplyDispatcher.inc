@@ -13,6 +13,6 @@ class FirewallApplyDispatcher extends Dispatcher {
      * Reloads the filter services.
      */
     protected function _process(mixed ...$arguments): void {
-        new Command("/etc/rc.filter_configure_sync");
+        new Command('/etc/rc.filter_configure_sync');
     }
 }
