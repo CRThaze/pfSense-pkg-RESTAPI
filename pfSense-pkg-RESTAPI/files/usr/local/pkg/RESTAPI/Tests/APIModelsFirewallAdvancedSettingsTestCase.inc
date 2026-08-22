@@ -21,13 +21,13 @@ class APIModelsFirewallAdvancedSettingsTestCase extends TestCase {
         # Update the aliasesresolveinterval value and check that the filterdns service uses the correct interval
         $firewall_advanced_settings = new FirewallAdvancedSettings(aliasesresolveinterval: 500, async: true);
         $firewall_advanced_settings->update(apply: true);
-        sleep(3);
+        sleep(5);
         $filterdns_ps = new Command('ps aux');
         $this->assert_str_contains($filterdns_ps->output, '/usr/local/sbin/filterdns -p /var/run/filterdns.pid -i 500');
 
         $firewall_advanced_settings = new FirewallAdvancedSettings(aliasesresolveinterval: 222, async: true);
         $firewall_advanced_settings->update(apply: true);
-        sleep(3);
+        sleep(5);
         $filterdns_ps = new Command('ps aux');
         $this->assert_str_contains($filterdns_ps->output, '/usr/local/sbin/filterdns -p /var/run/filterdns.pid -i 222');
 
