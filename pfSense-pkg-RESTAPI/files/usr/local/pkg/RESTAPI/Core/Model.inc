@@ -800,7 +800,7 @@ class Model {
         # Clear the object cache for all Model classes since config is being reloaded
         self::clear_model_cache();
 
-        $config = parse_config(parse: $force_parse);
+        #$config = \parse_config(parse: $force_parse);
     }
 
     /**
