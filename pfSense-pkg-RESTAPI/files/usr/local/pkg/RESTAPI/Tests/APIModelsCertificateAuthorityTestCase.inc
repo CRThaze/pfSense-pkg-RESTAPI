@@ -66,6 +66,24 @@ R02Pul8ulWQ8Kl3Q3pou8As7W1mMzA2DxQ==
 -----END EC PRIVATE KEY-----";
 
     /**
+     * Continually checks if certctl has a specific cert command name listed in the truststore. This is necessary
+     * as the trust store populates very slowly and is not always read immediately after a CA is set with trust.
+     * @param string $common_name The common name to check for in the truststore
+     * @returns bool true if the cert is trusted, false otherwise
+     */
+    public function is_cert_trusted(string $common_name): bool {
+        foreach (range(0, 10) as $attempt) {
+            sleep($attempt * 1.2);
+            $certctl = new Command('certctl list');
+            if (str_contains($certctl->output, $common_name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Checks that a CertificateAuthority cannot have `crt` and `prv` values that are not a matching key pair.
      */
     public function test_crt_and_prv_are_matching_keypair() {
@@ -114,16 +132,14 @@ R02Pul8ulWQ8Kl3Q3pou8As7W1mMzA2DxQ==
         $ca->create();
 
         # Ensure the cert is in the trust store directory
-        $truststore_dir_ls = glob('/usr/local/etc/ssl/certs/*.crt');
-        $this->assert_is_not_empty($truststore_dir_ls, message: 'Trust store directory should have one trusted CA!');
+        $this->assert_is_true($this->is_cert_trusted('example.com'));
 
         # Disable `trust`
         $ca->trust->value = false;
         $ca->update();
 
         # Ensure the certificate is not found in the trust store
-        $truststore_dir_ls = glob('/usr/local/etc/ssl/certs/*.crt');
-        $this->assert_is_empty($truststore_dir_ls, message: 'Trust store directory should have no trusted CAs!');
+        $this->assert_is_false($this->is_cert_trusted('example.com'));
 
         # Delete the CA
         $ca->delete();
