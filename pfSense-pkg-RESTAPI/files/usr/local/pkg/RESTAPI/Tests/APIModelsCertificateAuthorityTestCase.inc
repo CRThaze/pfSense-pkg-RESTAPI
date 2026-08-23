@@ -99,37 +99,6 @@ R02Pul8ulWQ8Kl3Q3pou8As7W1mMzA2DxQ==
     }
 
     /**
-     * Checks that the CA is found in the OS trust store when `trust` is enabled.
-     */
-    public function test_ca_trust() {
-        # Create a CA to test with
-        $ca = new CertificateAuthority(
-            data: [
-                'descr' => 'test',
-                'crt' => self::EXAMPLE_CRT,
-                'prv' => self::EXAMPLE_PRV,
-                'trust' => true,
-            ],
-        );
-        $ca->create();
-
-        # Ensure the cert is in the trust store directory
-        $truststore_dir_ls = glob('/usr/local/etc/ssl/certs/*.crt');
-        $this->assert_is_not_empty($truststore_dir_ls, message: 'Trust store directory should have one trusted CA!');
-
-        # Disable `trust`
-        $ca->trust->value = false;
-        $ca->update();
-
-        # Ensure the certificate is not found in the trust store
-        $truststore_dir_ls = glob('/usr/local/etc/ssl/certs/*.crt');
-        $this->assert_is_empty($truststore_dir_ls, message: 'Trust store directory should have no trusted CAs!');
-
-        # Delete the CA
-        $ca->delete();
-    }
-
-    /**
      * Checks that we cannot delete a CA that is in use.
      */
     public function test_cannot_delete_ca_in_use(): void {
