@@ -28,7 +28,7 @@ jobs:
           # Note: The first item in this matrix must use env.DEFAULT_PFSENSE_VERSION as the PFSENSE_VERSION!
           - FREEBSD_VERSION: FreeBSD-15.0-CURRENT
             PFSENSE_VERSION: "2.8.1"
-          - FREEBSD_VERSION: FreeBSD-15.0-CURRENT
+          - FREEBSD_VERSION: FreeBSD-16.0-CURRENT
             PFSENSE_VERSION: "2.9.0"
           - FREEBSD_VERSION: FreeBSD-16.0-CURRENT
             PFSENSE_VERSION: "25.11.1"
