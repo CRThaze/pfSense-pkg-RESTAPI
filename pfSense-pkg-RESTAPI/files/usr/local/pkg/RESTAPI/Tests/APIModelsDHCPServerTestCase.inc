@@ -6,6 +6,7 @@ use RESTAPI\Core\Command;
 use RESTAPI\Core\Model;
 use RESTAPI\Core\TestCase;
 use RESTAPI\Models\DHCPServer;
+use RESTAPI\Models\DHCPServerBackend;
 use RESTAPI\Models\DHCPServerStaticMapping;
 use RESTAPI\Models\NetworkInterface;
 use RESTAPI\Models\VirtualIP;
@@ -541,10 +542,9 @@ class APIModelsDHCPServerTestCase extends TestCase {
      * This test only runs when Kea is the active DHCP backend (kea-dhcp4.conf exists).
      */
     public function test_netboot_fields_written_to_kea_config(): void {
-        # Skip this test if Kea is not the active DHCP backend
-        if (!file_exists('/usr/local/etc/kea/kea-dhcp4.conf')) {
-            return;
-        }
+        # Ensure kea is set as the DHCP backend
+        $backend = new DHCPServerBackend(dhcpbackend: 'kea', async: false);
+        $backend->update(apply: true);
 
         $dhcp_server = new DHCPServer(id: 'lan', async: false);
         $dhcp_server->netboot->value = true;
@@ -599,6 +599,10 @@ class APIModelsDHCPServerTestCase extends TestCase {
         $this->assert_str_does_not_contain($kea_conf_after, '"next-server"');
         $this->assert_str_does_not_contain($kea_conf_after, 'ipxe_uefihttp_');
         $this->assert_str_does_not_contain($kea_conf_after, 'ipxe_legacy_');
+
+        # Revert dhcp backend
+        $backend->dhcpbackend->value = 'isc';
+        $backend->update(apply: true);
     }
 
     /**
@@ -612,7 +616,7 @@ class APIModelsDHCPServerTestCase extends TestCase {
                 # nextserver requires a valid IPv4 when netboot is true; it should be silently ignored when false
                 $dhcp_server->uefihttpboot->value = '';
                 $dhcp_server->nextserver->value = '';
-                $dhcp_server->update(apply: false);
+                $dhcp_server->update();
             },
         );
     }
@@ -625,14 +629,9 @@ class APIModelsDHCPServerTestCase extends TestCase {
             response_id: 'IP_ADDRESS_VALIDATOR_FAILED',
             code: 400,
             callable: function (): void {
-                $dhcp_server = new DHCPServer(
-                    id: 'lan',
-                    data: [
-                        'netboot' => true,
-                        'nextserver' => 'not-an-ip',
-                    ],
-                    async: false,
-                );
+                $dhcp_server = new DHCPServer(id: 'lan', async: false);
+                $dhcp_server->netboot->value = true;
+                $dhcp_server->nextserver->value = 'not an ip';
                 $dhcp_server->validate();
             },
         );
@@ -646,14 +645,9 @@ class APIModelsDHCPServerTestCase extends TestCase {
             response_id: 'URL_VALIDATOR_FAILED',
             code: 400,
             callable: function (): void {
-                $dhcp_server = new DHCPServer(
-                    id: 'lan',
-                    data: [
-                        'netboot' => true,
-                        'uefihttpboot' => 'not a url %%',
-                    ],
-                    async: false,
-                );
+                $dhcp_server = new DHCPServer(id: 'lan', async: false);
+                $dhcp_server->netboot->value = true;
+                $dhcp_server->uefihttpboot->value = 'not a url %%';
                 $dhcp_server->validate();
             },
         );
