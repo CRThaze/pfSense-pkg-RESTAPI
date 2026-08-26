@@ -20,6 +20,8 @@ class HAProxyFrontend extends Model {
     public StringField $descr;
     public StringField $status;
     public NestedModelField $a_extaddr;
+    public BooleanField $secondary;
+    public StringField $primary_frontend;
     public IntegerField $max_connections;
     public StringField $type;
     public NestedModelField $ha_acls;
@@ -72,6 +74,27 @@ class HAProxyFrontend extends Model {
             allow_empty: true,
             verbose_name: 'External Addresses',
             help_text: 'The external addresses assigned to this frontend.',
+        );
+        $this->secondary = new BooleanField(
+            default: false,
+            indicates_true: 'yes',
+            indicates_false: '',
+            verbose_name: 'Shared Frontend',
+            help_text: 'Enables making this a shared (secondary) frontend that groups under a ' .
+                'primary frontend instead of binding its own listen address. When enabled, set ' .
+                '`primary_frontend` to the primary frontend to share.',
+        );
+        # A plain StringField (not a ForeignModelField) on purpose: a self-referential
+        # ForeignModelField (HAProxyFrontend -> HAProxyFrontend) recurses infinitely during
+        # schema generation. The value is the name of another HAProxyFrontend.
+        $this->primary_frontend = new StringField(
+            default: null,
+            allow_null: true,
+            verbose_name: 'Primary Frontend',
+            help_text: 'The name of the primary frontend this frontend is shared under. Only ' .
+                'takes effect when `secondary` is enabled. When active, this frontend groups ' .
+                'under the named primary and uses its listen address instead of binding its ' .
+                'own. Must match the name of an existing frontend.',
         );
         $this->max_connections = new IntegerField(
             default: null,

@@ -207,4 +207,43 @@ class APIModelsHAProxyFrontendTestCase extends TestCase {
         $frontend->delete();
         $this->assert_is_false(HAProxyFrontend::query(id: $frontend)->exists());
     }
+
+    /**
+     * Checks that a frontend can be grouped under a primary (shared) frontend via the
+     * `primary_frontend` field, and that the reference round-trips and resolves to the primary.
+     */
+    public function test_primary_frontend(): void {
+        # A primary (standalone) frontend that owns the listen address
+        $primary = new HAProxyFrontend(
+            name: 'example_primary',
+            type: 'http',
+            a_extaddr: [['extaddr' => 'any_ipv4', 'extaddr_port' => '443', 'extaddr_ssl' => true]],
+            backend_serverpool: 'example_backend',
+        );
+        $primary->create();
+
+        # A shared frontend grouped under the primary (inherits the primary's listen address)
+        $shared = new HAProxyFrontend(
+            name: 'example_shared',
+            type: 'http',
+            secondary: true,
+            primary_frontend: 'example_primary',
+            backend_serverpool: 'example_backend',
+        );
+        $shared->create();
+
+        # Ensure secondary + primary_frontend round-trip on the shared frontend
+        $read_shared = HAProxyFrontend::query(id: $shared->id)->first();
+        $this->assert_is_true($read_shared->secondary->value);
+        $this->assert_equals($read_shared->primary_frontend->value, 'example_primary');
+
+        # The standalone frontend is not a secondary/shared frontend
+        $read_primary = HAProxyFrontend::query(id: $primary->id)->first();
+        $this->assert_is_false($read_primary->secondary->value);
+
+        # Clean up (shared first so the primary is no longer referenced)
+        $shared->delete();
+        $primary->delete();
+        $this->assert_is_false(HAProxyFrontend::query(id: $shared)->exists());
+    }
 }
