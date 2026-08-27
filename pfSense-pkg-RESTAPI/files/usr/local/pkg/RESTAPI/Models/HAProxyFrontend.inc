@@ -22,6 +22,7 @@ class HAProxyFrontend extends Model {
     public NestedModelField $a_extaddr;
     public BooleanField $secondary;
     public StringField $primary_frontend;
+    public BooleanField $ssloffload;
     public IntegerField $max_connections;
     public StringField $type;
     public NestedModelField $ha_acls;
@@ -129,6 +130,17 @@ class HAProxyFrontend extends Model {
             allow_null: true,
             verbose_name: 'Backend Server Pool',
             help_text: 'The default backend to use for this frontend.',
+        );
+        $this->ssloffload = new BooleanField(
+            default: false,
+            indicates_true: 'yes',
+            indicates_false: '',
+            verbose_name: 'SSL Offloading',
+            help_text: 'Enables SSL offloading for this frontend. This is required on a shared ' .
+                '(secondary) frontend for its `ssloffloadcert` to be served: without it the ' .
+                "certificate is not added to the primary frontend's SNI certificate list and " .
+                'clients receive the primary\'s default certificate instead. On a primary (non-' .
+                'shared) frontend SSL is enabled per external address via `extaddr_ssl`.',
         );
         $this->ssloffloadcert = new ForeignModelField(
             model_name: 'Certificate',
