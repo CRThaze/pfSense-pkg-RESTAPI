@@ -30,9 +30,13 @@ class HAProxyFrontendAddress extends Model {
         # Set model fields
         $this->extaddr = new StringField(
             required: true,
-            choices: ['custom', 'any_ipv4', 'any_ipv6', 'localhost_ipv4', 'localhost_ipv6'],
+            choices_callable: 'get_extaddr_choices',
             verbose_name: 'External Address',
-            help_text: 'The external address to use.',
+            help_text: 'The external address to use. In addition to the `custom`, `any_ipv4`, ' .
+                '`any_ipv6`, `localhost_ipv4` and `localhost_ipv6` pseudo-addresses, each configured ' .
+                "interface is selectable as `<interface>_ipv4`/`<interface>_ipv6` (e.g. `lan_ipv4`), " .
+                'matching the address list offered by the HAProxy package GUI. Use `custom` with ' .
+                '`extaddr_custom` to bind an arbitrary address such as a Virtual IP.',
         );
         $this->extaddr_custom = new StringField(
             required: true,
@@ -63,6 +67,27 @@ class HAProxyFrontendAddress extends Model {
         );
 
         parent::__construct($id, $parent_id, $data, ...$options);
+    }
+
+    /**
+     * Builds the valid external address choices for an HAProxy frontend: the static
+     * pseudo-addresses plus each configured interface's IPv4/IPv6 address (e.g.
+     * `lan_ipv4`, `wan_ipv6`). This mirrors the address list the HAProxy package's
+     * frontend GUI offers, so interface-bound frontends (the common case) can be
+     * created through the API instead of only `custom`/`any`/`localhost`. Virtual
+     * IPs continue to be bound via `custom` + `extaddr_custom`.
+     * @return array The list of valid `extaddr` values.
+     */
+    public function get_extaddr_choices(): array {
+        $choices = ['custom', 'any_ipv4', 'any_ipv6', 'localhost_ipv4', 'localhost_ipv6'];
+        # Read interface identifiers straight from config (available in both the web
+        # and CLI/buildschemas contexts) rather than get_configured_interface_with_descr(),
+        # which is not always loaded when schemas are generated.
+        foreach (array_keys(config_get_path('interfaces', [])) as $if) {
+            $choices[] = $if . '_ipv4';
+            $choices[] = $if . '_ipv6';
+        }
+        return $choices;
     }
 
     /**
